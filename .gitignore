@@ -1,0 +1,4 @@
+venv/*
+src/craps/*
+db/*
+src/__pycache__
