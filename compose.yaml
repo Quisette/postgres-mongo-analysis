@@ -1,0 +1,24 @@
+services:
+    mongo:
+        image: mongo
+        restart: always
+        ports:
+            - ${MONGO_SERVICE_PORT}:27017
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+            MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+        volumes:
+            - ./database/mongodb/data:/data/db
+
+    mongo-express:
+        image: mongo-express
+        restart: always
+        ports:
+            - ${MONGO_EXPRESS_SERVICE_PORT}:8081
+        depends_on:
+            - mongo
+        environment:
+            ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USERNAME}
+            ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
+            ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo:${MONGO_SERVICE_PORT}/
+            ME_CONFIG_MONGODB_ENABLE_ADMIN: true
