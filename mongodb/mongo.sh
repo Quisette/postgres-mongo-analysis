@@ -1,5 +1,5 @@
 sudo sh ./stop.sh
-sudo mongod  --dbpath ./db --fork --logpath /var/log/mongodb/mongod.log
+sudo mongod  --storageEngine inMemory --fork --dbpath ./db  --logpath /var/log/mongodb/mongod.log
 #source ../venv/bin/activate
 on_exit()
 {
