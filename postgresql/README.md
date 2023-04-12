@@ -8,7 +8,7 @@ The following packages are required:
 
 ## Step 1: Edit environment variables
 
-There is a file `.env` in this directory. Open it and fill in the required variables.
+Copy the file `env-example` to `.env`. Open it and fill in the required variables.
 
 ## Step 2: Edit and run the generator
 
