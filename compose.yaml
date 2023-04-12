@@ -24,4 +24,20 @@ services:
             ME_CONFIG_MONGODB_ENABLE_ADMIN: true
             ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_USERNAME} # mongo-express login username and password.
             ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_PASSWORD}
-
+# Use postgres/example user/password credentials
+    postgres:
+      image: postgres
+      restart: always
+      environment:
+        POSTGRES_USER: user
+        POSTGRES_PASSWORD: password
+      ports:
+        - 5432:5432
+      volumes:
+        - ./postgres/db/:/var/lib/postgresql/data/
+      #adminer:
+      #image: dpage/pgadmin4
+      #image: adminer
+      #restart: always
+      #ports:
+      # - 5000:8080

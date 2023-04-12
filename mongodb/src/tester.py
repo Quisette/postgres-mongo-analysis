@@ -12,19 +12,24 @@ DEFAULT_VALUES  = [1586479000, 'Lorem ipsum dolor sit amet, consectetur adipisic
 
 class Model:
 
-    def __init__(self):
-        self.name = generate_name(15)
+    def __init__(self, num):
+        self.name = f"model_{num}"
         self.fields = []
         self.cols = {}
         self.data = {}
-        for i in range(4):
+        for i in range(9):
             rand_index = i % 4
             self.field = {
                 'type': FIELD_TYPES[rand_index],
-                'name': generate_name(10),
+                'name': f"field_{i}",
                 'default_value': DEFAULT_VALUES[rand_index],
             }
             self.fields.append(self.field)
+        self.fields.append( {
+                'type': 'int',
+                'name': 'index',
+                'default_value': DEFAULT_VALUES[0],
+            })
         self.generate_cols()
         self.generate_data()
     def generate_cols(self):

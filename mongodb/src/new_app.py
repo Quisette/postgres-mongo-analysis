@@ -7,7 +7,7 @@ from tester import Model
 from copy import deepcopy
 import time
 
-mongo = MongoClient('localhost', 27017) # fixed mongo client
+mongo = MongoClient('mongodb://foo:bar@localhost', 27017) # fixed mongo client
 
 
 # create a model using column template
@@ -50,37 +50,88 @@ def delete_data():
     return
 
 
+FIELD_TYPES     = ['int', 'str', 'bool', 'datetime', 'ObjectId']
+DEFAULT_VALUES  = [1586479000, 'Lorem ipsum dolor sit amet, consectetur adipisicing elit', True, datetime.now(), ObjectId('6419e750a0a8c985a6afac16')]
 
 
-def single_bench(data_per_model, number_of_models):
+def gen_data(apps_num, model_num, record_num , field_num):
     total_time = 0
     arr = {}
+    field = {}
+
     ## create the Model array which stores prebuilt testing model
-    for i in range(number_of_models):
-        arr[i] = Model()
+    for i in range(model_num):
+        arr[i] = Model(i)
 
     ## for each model
-    for j in range(number_of_models):
-        model = arr[j]
-        create_model("a",model.name, model.cols)
-        ## generate bulk data
-        for _ in range(data_per_model):
-            start_time = time.time()
-            create_data("a", model.name, deepcopy(model.data))
-            stop_time = time.time()
-            total_time +=  stop_time - start_time
 
+    for i in range(apps_num):
+        for j in range(model_num):
+            for k in range(record_num):
+                # for l in range(field_num):
+                mongo[f"app_{i}"][f"model_{j}"].insert_one({
+                    "field_0": 1586479000,
+                    "field_1": "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
+                    "field_2": True,
+                    "field_3": datetime.now(),
+                    "field_4": ObjectId('6419e750a0a8c985a6afac16'),
+                    "field_5": 1586479000,
+                    "field_6": "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
+                    "field_7": True,
+                    "field_8": datetime.now(),
+                    "field_9": datetime.now(),
+                    "index": k
+                })
+
+
+
+
+    # for j in range(model_num):
+    #     model = arr[j]
+    #     for k in range(apps_num):
+    #         # create_model(f"app_{k}",model.name, model.cols)
+    #         ## generate bulk data
+    #         for num in range(record_num):
+    #             start_time = time.time()
+    #             # for i in range(field_num - 1):
+    #             #     field[f"field_{i}"] = DEFAULT_VALUES[i % 5]
+    #             #     field["index"] = num
+    #             # mongo[f"app_{k}"][f"model_{j}"].insert_one(field)
+
+    #             mongo[f"app_{k}"][model.name].insert_one({
+    #                 "field_0": 1586479000,
+    #                 "field_1": "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
+    #                 "field_2": True,
+    #                 "field_3": datetime.now(),
+    #                 "field_4": ObjectId('6419e750a0a8c985a6afac16'),
+    #                 "field_5": 1586479000,
+    #                 "field_6": "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
+    #                 "field_7": True,
+    #                 "field_8": datetime.now(),
+    #                 "field_9": datetime.now(),
+    #                 "index": num
+    #             })
+    #             stop_time = time.time()
+    #             total_time +=  stop_time - start_time
     print("section elapsed time: " +str(total_time) + " secs" )
-    mongo.drop_database("a")
+    # mongo.drop_database("a")
     return total_time
 
 
-def benchmark(n):
-    elapsed = 0
-    for _ in range(n):
-        elapsed += single_bench(5000, 10)
-    print("Total elapsed: "+ str(elapsed) + " secs")
-    print("average: " + str(elapsed /  n ) + "secs")
+# def benchmark(n):
+#     elapsed = 0
+#     for _ in range(n):
+#         elapsed +=
+#     # print("Total elapsed: "+ str(elapsed) + " secs")
+#     # print("average: " + str(elapsed /  n ) + "secs")
 
 
-benchmark(3)
+# benchmark(1)
+
+
+
+def drop(n):
+    for i in range(n):
+        mongo.drop_database(f"app_{i}")
+drop(1)
+gen_data(100, 10, 100, 10)
