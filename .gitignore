@@ -149,3 +149,8 @@ mongodb/deprecated/
 # postgres
 
 postgres/
+mongodb/benchmark/.vscode/launch.json
+mongodb/benchmark/.vscode/settings.json
+mongodb/benchmark/.vscode/tasks.json
+.vscode/launch.json
+.vscode/tasks.json

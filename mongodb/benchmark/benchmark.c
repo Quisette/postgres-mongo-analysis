@@ -2,16 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
-
+#include <string.h>
+#include "dotenv.h"
 #define MONGO_URL "mongodb://foo:bar@localhost:27017"
 
 mongoc_client_t *client;
 mongoc_database_t *database;
 mongoc_collection_t *collection;
 
-
-void random_query(mongoc_client_t *client,  int app_num, int model_num, int record_num,int times) {
+void random_query(mongoc_client_t *client, int app_num, int model_num, int record_num, int times) {
     const bson_t *doc;
     bson_error_t error;
     time_t t;
@@ -25,11 +24,10 @@ void random_query(mongoc_client_t *client,  int app_num, int model_num, int reco
         int rand_record_num = rand() % record_num;
 
         // create app name and model name
-        char app_name[15];
+        char * app_name = malloc(20), * model_name = malloc(20);
         sprintf(app_name, "app_%d", rand_app_num);
-        char model_name[15];
-        sprintf(model_name, "model_%d", rand_model_num);
 
+        sprintf(model_name, "model_%d", rand_model_num);
 
         // clock start
         clock_t begin = clock();
@@ -55,6 +53,9 @@ void random_query(mongoc_client_t *client,  int app_num, int model_num, int reco
         if (time_spent < min) {
             min = time_spent;
         }
+        free(app_name);
+        free(model_name);
+
         // printf("query time spent (single): %f\n", time_spent * 1000);
     }
 
@@ -65,7 +66,9 @@ void random_query(mongoc_client_t *client,  int app_num, int model_num, int reco
 }
 
 int main(int argc, char *argv[]) {
-    const char *uri_string = MONGO_URL;
+    env_load(".env", false);
+    char *uri_string = malloc(100);
+    sprintf(uri_string, "mongodb://%s:%s@%s:%s", getenv("mongodb_user"), getenv("mongodb_password"), getenv("mongodb_host"), getenv("mongodb_port"));
     mongoc_uri_t *uri;
     mongoc_client_t *client;
     mongoc_database_t *database;
@@ -101,7 +104,7 @@ int main(int argc, char *argv[]) {
     if (!client) {
         return EXIT_FAILURE;
     }
-    if (!argv[4]){
+    if (argc != 5) {
         printf("Usage: ./benchmark.out [app_num] [model_num] [record_num] [times]\n");
         return EXIT_FAILURE;
     }
@@ -113,14 +116,13 @@ int main(int argc, char *argv[]) {
     mongoc_client_set_appname(client, "connect-example");
 
     // main program starts
-    random_query(client , atoi(argv[1]),atoi(argv[2]),atoi(argv[3]),atoi(argv[4]));
-
-
+    random_query(client, atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4]));
 
     // release memory
     mongoc_uri_destroy(uri);
     mongoc_client_destroy(client);
     mongoc_cleanup();
+    free(uri_string);
 
     return EXIT_SUCCESS;
 }
