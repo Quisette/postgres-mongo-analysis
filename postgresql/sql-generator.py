@@ -5,25 +5,49 @@ from sqlalchemy.ext.declarative import declarative_base
 import random, string
 from datetime import datetime
 from random import randint
-
+from sys import argv
 DB_USERNAME = 'user'
 DB_PASSWORD = 'password'
 DB_HOST = 'localhost'
 DB_NAME = 'sql-test-database'
 
-BENCHMARK_MODELS_PER_APP = 10
-BENCHMARK_FIELDS_PER_MODEL = 4
-BENCHMARK_RECORDS_PER_MODEL = 5000
+if argv[1] == '-h':
+    print("app, model, field,record")
+
+
+if len(argv) <= 4:
+    raise Error("Insufficient arguments.")
+
+map(int, argv)
+BENCHMARK_APP_COUNT = int(argv[1])
+BENCHMARK_MODELS_PER_APP =  int(argv[2])
+BENCHMARK_RECORDS_PER_MODEL =  int(argv[3])
+BENCHMARK_FIELDS_PER_MODEL =  int(argv[4])
 
 MODEL_KEY_LENGTH = 10
 FIELD_KEY_LENGTH = 10
 
 
+def drop(engine):
+    try:
+        Data.__table__.drop(engine)
+        Record.__table__.drop(engine)
+        Field.__table__.drop(engine)
+        Model.__table__.drop(engine)
+        App.__table__.drop(engine)
+    except:
+        pass
+
+
 # create a connection to the database
 engine = create_engine(f'postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}')
 
+drop(engine)
+
+
 # create a declarative base
 Base = declarative_base()
+
 
 # define a table class
 class App(Base):
@@ -79,9 +103,9 @@ class Data(Base):
     value = Column(String)
 
 
+
 # create the table in the database
 Base.metadata.create_all(engine)
-
 
 # Define session maker
 Session = sessionmaker(bind=engine, expire_on_commit=False)
@@ -127,16 +151,19 @@ def flush():
     session.query(App).delete()
     session.commit()
 
-print('Flushing...')
-flush()
-create_app('Test App')
+
+print('Dropping existing data...')
+#flush()
+# drop(engine)
+#create_app('app_0')
 #create_model('Test App', 'Test Model')
 #create_field('Test App', 'Test Model', 'Test Field')
 #create_record('Test App', 'Test Model', {})
 
 
-FIELD_TYPES     = ['int', 'str', 'bool', 'datetime', 'oid']
-DEFAULT_VALUES  = [1586479000, 'Lorem ipsum dolor sit amet, consectetur adipisicing elit', True, datetime.now().timestamp(), 'f5d3489ca2d5f63e4c2b78e']
+
+FIELD_TYPES     = ['int', 'str', 'bool', 'datetime', 'oid', 'int', 'str', 'bool', 'datetime', 'datetime']
+DEFAULT_VALUES  = [1586479000, 'Lorem ipsum dolor sit amet, consectetur adipisicing elit', True, datetime.now().timestamp(), 'f5d3489ca2d5f63e4c2b78e', 1586479000, 'Lorem ipsum dolor sit amet, consectetur adipisicing elit', True, datetime.now().timestamp(), 'f5d3489ca2d5f63e4c2b78e', datetime.now().timestamp()]
 
 
 # Random name generator
@@ -147,21 +174,20 @@ def generate_name(length):
 
 # Generate a model with a random name
 # then randomly generate 4 to 10
-def generate_model(model_name):
+def generate_model(app_name, model_name):
     model = Model()
     model.name = model_name
     for i in range(BENCHMARK_FIELDS_PER_MODEL):
-        rand_index = i % 4
         model.fields.append(
             Field(
-                type=FIELD_TYPES[rand_index],
+                type=FIELD_TYPES[i],
                 # name=generate_name(FIELD_KEY_LENGTH),
-                name="FIELD NAME",
-                default_value=DEFAULT_VALUES[rand_index],
+                name=f"field_{i}",
+                default_value=DEFAULT_VALUES[i],
             )
         )
     session = Session()
-    app = session.query(App).filter_by(name='Test App').first()
+    app = session.query(App).filter_by(name=app_name).first()
     model.app_id = app.id
     session.add(model)
     session.commit()
@@ -189,13 +215,15 @@ def generate_records(app_name, model_name, count=BENCHMARK_RECORDS_PER_MODEL):
 
 
 # Pre-generate model names
-MODEL_NAMES = [generate_name(MODEL_KEY_LENGTH) for _ in range(BENCHMARK_MODELS_PER_APP)]
+# MODEL_NAMES = [generate_name(MODEL_KEY_LENGTH) for _ in range(BENCHMARK_MODELS_PER_APP)]
 
 print('Starting generating...')
 start = datetime.now().timestamp()
-for i in range(BENCHMARK_MODELS_PER_APP):
-    model = generate_model(MODEL_NAMES[i])
-    generate_records('Test App', model.name, BENCHMARK_RECORDS_PER_MODEL)
+for a in range(BENCHMARK_APP_COUNT):
+    create_app(f'app_{a}')
+    for i in range(BENCHMARK_MODELS_PER_APP):
+        model = generate_model(f'app_{a}', f'model_{i}')
+        generate_records(f'app_{a}', model.name, BENCHMARK_RECORDS_PER_MODEL)
 end = datetime.now().timestamp()
 
 print(f'Time used: {int(end-start)} s ({int((end-start)*1000)} ms)')
