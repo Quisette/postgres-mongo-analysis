@@ -17,14 +17,14 @@ Data is generated via the `generator.py` script. First, open it and edit the par
 Once the parameters have been set, execute the command:
 
 ```bash
-python3 generator.py
+python3 generator.py {APPS} {MODEL_PER_APP} {RECORDS_PER_MODEL} {FIELDS_PERO_MODEL}
 ```
 
 ### Step 3: Compile the benchmark program
 
 ```bash
-gcc -O benchmark.out db-bench-c.c -leq -lm dotenv.c -lm
-``` 
+gcc -o benchmark.out db-bench-c.c -lpq -lm dotenv.c -lm
+```
 
 ### Step 4: Execute the benchmark
 

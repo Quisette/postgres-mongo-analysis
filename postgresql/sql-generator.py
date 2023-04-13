@@ -5,26 +5,49 @@ from sqlalchemy.ext.declarative import declarative_base
 import random, string
 from datetime import datetime
 from random import randint
-
-DB_USERNAME = 'postgres'
-DB_PASSWORD = '//5uPPD4wg'
+from sys import argv
+DB_USERNAME = 'user'
+DB_PASSWORD = 'password'
 DB_HOST = 'localhost'
-DB_NAME = 'sql-database-3'
+DB_NAME = 'sql-test-database'
 
-BENCHMARK_APP_COUNT = 100
-BENCHMARK_MODELS_PER_APP = 10
-BENCHMARK_FIELDS_PER_MODEL = 10
-BENCHMARK_RECORDS_PER_MODEL = 100
+if argv[1] == '-h':
+    print("app, model, field,record")
+
+
+if len(argv) <= 4:
+    raise Error("Insufficient arguments.")
+
+map(int, argv)
+BENCHMARK_APP_COUNT = int(argv[1])
+BENCHMARK_MODELS_PER_APP =  int(argv[2])
+BENCHMARK_RECORDS_PER_MODEL =  int(argv[3])
+BENCHMARK_FIELDS_PER_MODEL =  int(argv[4])
 
 MODEL_KEY_LENGTH = 10
 FIELD_KEY_LENGTH = 10
 
 
+def drop(engine):
+    try:
+        Data.__table__.drop(engine)
+        Record.__table__.drop(engine)
+        Field.__table__.drop(engine)
+        Model.__table__.drop(engine)
+        App.__table__.drop(engine)
+    except:
+        pass
+
+
 # create a connection to the database
 engine = create_engine(f'postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}')
 
+drop(engine)
+
+
 # create a declarative base
 Base = declarative_base()
+
 
 # define a table class
 class App(Base):
@@ -80,9 +103,9 @@ class Data(Base):
     value = Column(String)
 
 
+
 # create the table in the database
 Base.metadata.create_all(engine)
-
 
 # Define session maker
 Session = sessionmaker(bind=engine, expire_on_commit=False)
@@ -128,12 +151,15 @@ def flush():
     session.query(App).delete()
     session.commit()
 
-print('Flushing...')
-flush()
-create_app('app_0')
+
+print('Dropping existing data...')
+#flush()
+# drop(engine)
+#create_app('app_0')
 #create_model('Test App', 'Test Model')
 #create_field('Test App', 'Test Model', 'Test Field')
 #create_record('Test App', 'Test Model', {})
+
 
 
 FIELD_TYPES     = ['int', 'str', 'bool', 'datetime', 'oid', 'int', 'str', 'bool', 'datetime', 'datetime']
@@ -148,7 +174,7 @@ def generate_name(length):
 
 # Generate a model with a random name
 # then randomly generate 4 to 10
-def generate_model(model_name):
+def generate_model(app_name, model_name):
     model = Model()
     model.name = model_name
     for i in range(BENCHMARK_FIELDS_PER_MODEL):
@@ -161,7 +187,7 @@ def generate_model(model_name):
             )
         )
     session = Session()
-    app = session.query(App).filter_by(name='app_0').first()
+    app = session.query(App).filter_by(name=app_name).first()
     model.app_id = app.id
     session.add(model)
     session.commit()
@@ -194,8 +220,9 @@ def generate_records(app_name, model_name, count=BENCHMARK_RECORDS_PER_MODEL):
 print('Starting generating...')
 start = datetime.now().timestamp()
 for a in range(BENCHMARK_APP_COUNT):
+    create_app(f'app_{a}')
     for i in range(BENCHMARK_MODELS_PER_APP):
-        model = generate_model(f'model_{i}')
+        model = generate_model(f'app_{a}', f'model_{i}')
         generate_records(f'app_{a}', model.name, BENCHMARK_RECORDS_PER_MODEL)
 end = datetime.now().timestamp()
 
