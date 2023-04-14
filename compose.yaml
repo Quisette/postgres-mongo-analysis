@@ -5,8 +5,8 @@ services:
         ports:
             - ${MONGO_SERVICE_PORT}:27017
         environment:
-            MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
-            MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+          MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+          MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
         volumes:
             - ./database/mongodb/data:/data/db
 
@@ -19,12 +19,11 @@ services:
             - mongo
         environment:
             ME_CONFIG_MONGODB_SERVER: mongo
+            #ME_CONFIG_MONGODB_ENABLE_ADMIN: true
             ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USERNAME}
             ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
-            ME_CONFIG_MONGODB_ENABLE_ADMIN: true
             ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_USERNAME} # mongo-express login username and password.
-            ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_PASSWORD}
-# Use postgres/example user/password credentials
+            ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_PASSWORD} # Use postgres/example user/password credentials
     postgres:
       image: postgres
       restart: always
