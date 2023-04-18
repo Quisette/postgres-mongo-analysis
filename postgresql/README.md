@@ -88,13 +88,17 @@ The script will drop all the existing tables in the database prior to data gener
 The following command executes the `benchmark.out` script:
 
 ```bash
-./benchmark.out {BENCHMARK_COUNT} {QUERIES_PER_BENCHMARK} {RECORDS_PER_QUERY}
+./benchmark.out {BENCHMARK_COUNT} {QUERIES_PER_BENCHMARK} {RECORDS_PER_QUERY} {DATASIZE_APP_COUNT} {DATASIZE_MODELS_PER_MODEL} {DATASIZE_RECORDS_PER_MODEL}
 ```
 
 where `RECORDS_PER_QUERY` will be put into the SQL query strings.
 
+The last three parameters tell the system the datasize in the database. These should match the arguments passed during data generation. They tell the benchmark script the range of random id selection.
+
+
 For example, the following runs repeats `100,000` times, with `10` queries per benchmark and queries `1` record per query.
+It specifies there are 1 app, 10 models per app, and 100 records per model.
 
 ```bash
-./benchmark.out 100000 10 1
+./benchmark.out 100000 10 1 1 10 100
 ```

@@ -24,6 +24,8 @@ BENCHMARK_MODELS_PER_APP =  int(argv[2])
 BENCHMARK_RECORDS_PER_MODEL =  int(argv[3])
 BENCHMARK_FIELDS_PER_MODEL =  int(argv[4])
 
+print(BENCHMARK_APP_COUNT, BENCHMARK_MODELS_PER_APP, BENCHMARK_RECORDS_PER_MODEL, BENCHMARK_FIELDS_PER_MODEL)
+
 MODEL_KEY_LENGTH = 10
 FIELD_KEY_LENGTH = 10
 
@@ -162,8 +164,8 @@ print('Dropping existing data...')
 
 
 
-FIELD_TYPES     = ['int', 'str', 'bool', 'datetime', 'oid', 'int', 'str', 'bool', 'datetime', 'datetime']
-DEFAULT_VALUES  = [1586479000, 'Lorem ipsum dolor sit amet, consectetur adipisicing elit', True, datetime.now().timestamp(), 'f5d3489ca2d5f63e4c2b78e', 1586479000, 'Lorem ipsum dolor sit amet, consectetur adipisicing elit', True, datetime.now().timestamp(), 'f5d3489ca2d5f63e4c2b78e', datetime.now().timestamp()]
+FIELD_TYPES     = ['int', 'str', 'bool', 'datetime', 'int']
+DEFAULT_VALUES  = [1586479000, 'Lorem ipsum dolor sit amet, consectetur adipisicing elit', True, datetime.now().timestamp(), 1]
 
 
 # Random name generator
@@ -180,10 +182,10 @@ def generate_model(app_name, model_name):
     for i in range(BENCHMARK_FIELDS_PER_MODEL):
         model.fields.append(
             Field(
-                type=FIELD_TYPES[i],
+                type=FIELD_TYPES[i%len(FIELD_TYPES)],
                 # name=generate_name(FIELD_KEY_LENGTH),
                 name=f"field_{i}",
-                default_value=DEFAULT_VALUES[i],
+                default_value=DEFAULT_VALUES[i%len(FIELD_TYPES)],
             )
         )
     session = Session()

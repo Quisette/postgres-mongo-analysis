@@ -13,11 +13,21 @@
 // #define RECORDS_PER_QUERY 100
 
 
-int query(PGconn* const db, const int records_per_query, const char* str_records_per_query) {
-    PGresult* res1 = (PGresult*)PQexec(db, "SELECT id FROM apps WHERE name = 'app_0';");
+int query(PGconn* const db, const int records_per_query, const char* str_records_per_query, const int rand_app_num,const int rand_model_num, const int rand_record_num) {
+
+    char buffer[20];
+
+    char app_query[512] = "SELECT id FROM apps WHERE name = 'app_";
+    sprintf(buffer,"%d",rand_app_num);
+    strcat(app_query, buffer);
+    strcat(app_query, "';");
+    PGresult* res1 = (PGresult*)PQexec(db, app_query);
     char* app_id = PQgetvalue(res1, 0, 0);
 
-    char model_query[512] = "SELECT id FROM models WHERE name = 'model_0' and app_id = '";
+    char model_query[512] = "SELECT id FROM models WHERE name = 'model_";
+    sprintf(buffer,"%d", rand_model_num);
+    strcat(model_query, buffer);
+    strcat(model_query, "' and app_id = '");
     strcat(model_query, app_id);
     strcat(model_query, "';");
 
@@ -47,11 +57,15 @@ int query(PGconn* const db, const int records_per_query, const char* str_records
 
 int main(int* argc, char** argv) {
 
-    // printf("%d\t%d\t%d\n", atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
+//    printf("%d\t%d\t%d\n", atoi(argv[4]), atoi(argv[5]), atoi(argv[6]));
 
     const int epoch_count = atoi(argv[1]);
     const int queries_per_epoch = atoi(argv[2]);
     const int records_per_query = atoi(argv[3]);
+
+    const int datasize_app_count = atoi(argv[4]);
+    const int datasize_models_per_app = atoi(argv[5]);
+    const int datasize_records_per_model = atoi(argv[6]);
 
     char str_records_per_query[16];
     sprintf(str_records_per_query, "%d", records_per_query);
@@ -65,13 +79,22 @@ int main(int* argc, char** argv) {
     double benchsum = 0.0;
     double benchmin = 99999.0;
     double benchmax = 0.0;
+    
+    time_t t;
+    srand((unsigned)time(&t));
 
     for (int n = 0; n < epoch_count; ++n) {
+    	int rand_app_num = (int)(rand() % datasize_app_count);
+        int rand_model_num = (int)(rand() % datasize_models_per_app);
+	int rand_record_num = (int)(rand() % datasize_records_per_model);
+   
+//	printf("Epoch %d: \n%d\t%d\t%d", n, rand_app_num, rand_model_num, rand_record_num);
+
         clock_t start = clock();
 
         //do stuff
         for (int i = 0; i < queries_per_epoch; ++i)
-            query(db, records_per_query, str_records_per_query);
+            query(db, records_per_query, str_records_per_query, rand_app_num, rand_model_num, rand_record_num);
 
         clock_t end = clock();
 
